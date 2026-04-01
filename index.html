@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#0a0a0a">
+<title>Frappo · Investments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --kavi:#FF6B6B;--varun:#4ECDC4;--dilish:#FFE66D;
+  --bg:#0C0C0F;--surface:#141418;--border:#1E1E26;
+  --text:#F0F0F5;--muted:#55556A;--dim:#2A2A38;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* LOGIN */
+#login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 28px;text-align:center;background:radial-gradient(ellipse at 50% 0%,#1a1a2e 0%,var(--bg) 70%)}
+.login-glow{width:90px;height:90px;border-radius:26px;background:linear-gradient(135deg,#FF6B6B,#FF9A3C);display:flex;align-items:center;justify-content:center;font-size:44px;margin-bottom:22px;box-shadow:0 0 50px rgba(255,107,107,.3)}
+.login-title{font-size:30px;font-weight:800;color:#fff;letter-spacing:-1px;margin-bottom:6px}
+.login-sub{font-size:14px;color:var(--muted);margin-bottom:36px;line-height:1.7}
+.login-partners{display:flex;gap:8px;margin-bottom:36px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 20px}
+.lp{font-size:13px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:5px}
+.lp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.denied{background:#1a0808;border:1px solid #5a1a1a;border-radius:12px;padding:14px 18px;color:#ff6b6b;font-size:13px;margin-bottom:20px;display:none;line-height:1.7;max-width:310px}
+.denied.show{display:block}
+.login-footer{font-size:11px;color:#2a2a3a;line-height:2;margin-top:20px}
+
+/* APP */
+#app{display:none;min-height:100vh}
+
+/* HEADER */
+.hdr{background:rgba(12,12,15,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:52px 18px 0;position:sticky;top:0;z-index:99;border-bottom:1px solid var(--border)}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
+.brand-row{display:flex;align-items:center;gap:10px}
+.brand-icon{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#FF6B6B,#FF9A3C);display:flex;align-items:center;justify-content:center;font-size:20px}
+.brand-name{font-size:21px;font-weight:800;color:#fff;letter-spacing:-.5px;line-height:1}
+.brand-label{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.hdr-right{text-align:right}
+.total-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.total-value{font-size:26px;font-weight:800;color:#fff;letter-spacing:-1px;font-family:'DM Mono',monospace}
+.user-row{display:flex;align-items:center;gap:7px;margin-top:6px;justify-content:flex-end}
+.user-avatar{width:22px;height:22px;border-radius:50%;border:2px solid var(--border)}
+.user-name{font-size:11px;color:var(--muted);font-weight:600}
+.signout{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:10px;padding:3px 8px;cursor:pointer;font-family:inherit}
+
+/* CHIPS */
+.chips{display:flex;gap:8px;margin-bottom:14px}
+.chip{flex:1;background:var(--surface);border-radius:12px;padding:11px 6px;text-align:center;border:1px solid var(--border);position:relative;overflow:hidden}
+.chip::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.chip.kavi::before{background:var(--kavi)}.chip.varun::before{background:var(--varun)}.chip.dilish::before{background:var(--dilish)}
+.chip-name{font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:1px;text-transform:uppercase;font-weight:600}
+.chip-amt{font-size:15px;font-weight:700;font-family:'DM Mono',monospace}
+.chip-pct{font-size:10px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace}
+
+/* TABS */
+.tabs{display:flex;gap:4px;padding-bottom:12px}
+.tab{flex:1;border:none;border-radius:9px;padding:10px 0;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;background:var(--surface);color:var(--muted);transition:all .2s}
+.tab.on{background:linear-gradient(135deg,#FF6B6B,#FF9A3C);color:#fff}
+
+/* PAGES */
+.page{display:none;padding:16px 18px 100px;animation:fadeUp .25s ease}
+.page.on{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* SYNC BAR */
+.sync-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sync-info{display:flex;align-items:center;gap:7px}
+.sdot{width:7px;height:7px;border-radius:50%;background:#4ECDC4;flex-shrink:0;transition:background .3s}
+.sdot.syncing{background:#FFE66D;animation:pulse .8s ease infinite}
+.sdot.err{background:#FF6B6B}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.slabel{font-size:11px;color:var(--muted)}
+.rbtn{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;padding:6px 12px;cursor:pointer;font-family:inherit;font-weight:600}
+
+/* SETUP CARD */
+.setup-card{background:#0f0f00;border:1px solid #3a3a00;border-radius:14px;padding:18px;margin-bottom:16px;display:none}
+.setup-card.show{display:block}
+.setup-title{color:#FFE66D;font-size:14px;font-weight:700;margin-bottom:6px}
+.setup-body{color:#7a7a40;font-size:12px;line-height:1.8;margin-bottom:14px}
+.setup-input{width:100%;background:#0a0a0a;border:1px solid #2a2a10;border-radius:9px;padding:12px 14px;color:#f0f0f0;font-size:12px;font-family:'DM Mono',monospace;outline:none;-webkit-appearance:none;margin-bottom:10px}
+.setup-save{width:100%;padding:12px;border-radius:9px;border:none;background:linear-gradient(135deg,#FF6B6B,#FF9A3C);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+
+/* ENTRY CARDS */
+.ecard{background:var(--surface);border-radius:14px;border:1px solid var(--border);margin-bottom:10px;overflow:hidden}
+.erow{display:flex;align-items:center;gap:10px;padding:14px 14px 14px 18px;position:relative}
+.ebar{position:absolute;left:0;top:0;bottom:0;width:3px}
+.ebody{flex:1;min-width:0}
+.edesc{font-size:15px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.emeta{font-size:11px;color:var(--muted);margin-top:5px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.etag{border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;letter-spacing:.3px}
+.eamt{font-size:16px;font-weight:700;color:#fff;flex-shrink:0;font-family:'DM Mono',monospace}
+.dbtn{background:var(--dim);border:none;border-radius:7px;width:28px;height:28px;color:var(--muted);font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.dconf{display:flex;gap:5px;flex-shrink:0}
+.dyes{background:#FF6B6B;color:#fff;border:none;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer}
+.dno{background:var(--dim);color:var(--muted);border:none;border-radius:7px;padding:5px 10px;font-size:11px;cursor:pointer}
+.empty{text-align:center;padding:64px 0;color:var(--muted);font-size:14px;line-height:2.4}
+
+/* FORM */
+.fcard{background:var(--surface);border-radius:16px;border:1px solid var(--border);padding:22px}
+.fsec{margin-bottom:16px}
+.flabel{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:9px;display:block;font-weight:700}
+.prow{display:flex;gap:8px}
+.pbtn{flex:1;padding:12px 0;border-radius:10px;border:2px solid var(--border);background:var(--bg);color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+input,select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:13px 14px;color:var(--text);font-size:15px;font-family:'DM Sans',sans-serif;-webkit-appearance:none;appearance:none;outline:none;transition:border-color .2s}
+input:focus,select:focus{border-color:var(--muted)}
+input::placeholder{color:var(--dim)}
+.amt-input{font-size:26px;font-weight:700;font-family:'DM Mono',monospace}
+.savebtn{width:100%;padding:16px;border-radius:12px;border:none;background:linear-gradient(135deg,#FF6B6B,#FF9A3C);color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px;transition:opacity .2s}
+.savebtn:active{opacity:.85}
+.savebtn:disabled{background:var(--dim);color:var(--muted);cursor:default}
+
+/* SUMMARY */
+.scard{background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:18px;margin-bottom:12px}
+.stitle{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;font-weight:700}
+.big-stat{text-align:center;padding:8px 0 4px}
+.big-num{font-size:36px;font-weight:800;color:#fff;letter-spacing:-2px;font-family:'DM Mono',monospace}
+.big-lbl{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:6px}
+.brow{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.brow:last-child{border-bottom:none}
+.bleft{display:flex;align-items:center;gap:12px}
+.av{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#0C0C0F;flex-shrink:0}
+.bname{font-size:15px;font-weight:700;color:var(--text)}
+.bsub{font-size:11px;color:var(--muted);margin-top:2px}
+.bamt{font-size:17px;font-weight:700;color:#fff;font-family:'DM Mono',monospace}
+.own-section{margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.own-bar{display:flex;height:10px;border-radius:6px;overflow:hidden;gap:2px;margin:10px 0}
+.own-legend{display:flex;gap:14px;flex-wrap:wrap}
+.cbar-wrap{margin-bottom:13px}
+.cbar-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;color:var(--muted)}
+.cbar-top span:last-child{color:#fff;font-weight:600;font-family:'DM Mono',monospace}
+.cbar-track{height:5px;background:var(--border);border-radius:4px}
+.cbar-fill{height:100%;background:linear-gradient(90deg,#FF6B6B,#FF9A3C);border-radius:4px}
+
+/* FLASH */
+.flash{position:fixed;top:14px;left:50%;transform:translateX(-50%) translateY(-80px);border-radius:12px;padding:11px 22px;font-size:13px;font-weight:600;z-index:999;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.6);transition:transform .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+.flash.show{transform:translateX(-50%) translateY(0)}
+.flash.ok{background:#0d2010;border:1px solid #4ECDC4;color:#4ECDC4}
+.flash.err{background:#200d0d;border:1px solid #FF6B6B;color:#FF6B6B}
+.flash.info{background:#0d1020;border:1px solid #6B9FFF;color:#6B9FFF}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-glow">☕</div>
+  <div class="login-title">Frappo</div>
+  <div class="login-sub">Private Investment Tracker<br>for the Frappo partnership</div>
+  <div class="login-partners">
+    <div class="lp"><span class="lp-dot" style="background:#FF6B6B"></span>Kavi</div>
+    <div class="lp" style="color:#2a2a3a;font-weight:400">·</div>
+    <div class="lp"><span class="lp-dot" style="background:#4ECDC4"></span>Varun</div>
+    <div class="lp" style="color:#2a2a3a;font-weight:400">·</div>
+    <div class="lp"><span class="lp-dot" style="background:#FFE66D"></span>Dilish</div>
+  </div>
+  <div class="denied" id="denied">
+    ⛔ Access Denied<br>
+    <span style="font-size:12px;color:#aa5555">This app is private to Kavi, Varun &amp; Dilish only.</span>
+  </div>
+  <!-- ⚠️ Replace YOUR_CLIENT_ID_HERE after Google Cloud setup -->
+  <div id="g_id_onload"
+    data-client_id="252157806823-r2vvt0uotgaj63a1gbg2jcvvtaapifdk.apps.googleusercontent.com"
+    data-callback="handleCredential"
+    data-auto_prompt="false">
+  </div>
+  <div class="g_id_signin"
+    data-type="standard"
+    data-shape="pill"
+    data-theme="filled_black"
+    data-text="sign_in_with"
+    data-size="large"
+    data-logo_alignment="left"
+    data-width="300">
+  </div>
+  <div class="login-footer">Secured by Google · Private access only<br>Frappo Investment Tracker © 2025</div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="flash" id="fl"></div>
+
+  <div class="hdr">
+    <div class="hdr-top">
+      <div class="brand-row">
+        <div class="brand-icon">☕</div>
+        <div>
+          <div class="brand-name">Frappo</div>
+          <div class="brand-label">Investments</div>
+        </div>
+      </div>
+      <div class="hdr-right">
+        <div class="total-label">Total Invested</div>
+        <div class="total-value" id="gtotal">₹0</div>
+        <div class="user-row">
+          <img class="user-avatar" id="uavatar" src="" alt="">
+          <span class="user-name" id="uname"></span>
+          <button class="signout" onclick="signOut()">Sign out</button>
+        </div>
+      </div>
+    </div>
+    <div class="chips">
+      <div class="chip kavi"><div class="chip-name">Kavi</div><div class="chip-amt" id="kv" style="color:var(--kavi)">₹0</div><div class="chip-pct" id="kp">0%</div></div>
+      <div class="chip varun"><div class="chip-name">Varun</div><div class="chip-amt" id="vv" style="color:var(--varun)">₹0</div><div class="chip-pct" id="vp">0%</div></div>
+      <div class="chip dilish"><div class="chip-name">Dilish</div><div class="chip-amt" id="dv" style="color:var(--dilish)">₹0</div><div class="chip-pct" id="dp">0%</div></div>
+    </div>
+    <div class="tabs">
+      <button class="tab on" onclick="go('log')">📋 Log</button>
+      <button class="tab" onclick="go('add')">➕ Add</button>
+      <button class="tab" onclick="go('summary')">📊 Summary</button>
+    </div>
+  </div>
+
+  <!-- LOG -->
+  <div class="page on" id="pg-log">
+    <div class="setup-card" id="setup-card">
+      <div class="setup-title">⚙️ Connect Google Sheets (one-time)</div>
+      <div class="setup-body">Paste the Google Apps Script Web App URL below to enable live sync across all 3 phones. Do this once — it saves automatically.</div>
+      <input class="setup-input" id="cfg-url" type="url" placeholder="https://script.google.com/macros/s/…/exec">
+      <button class="setup-save" onclick="saveUrl()">Connect →</button>
+    </div>
+    <div class="sync-bar">
+      <div class="sync-info"><div class="sdot" id="sdot"></div><span class="slabel" id="slabel">Connecting…</span></div>
+      <button class="rbtn" onclick="fetchData(true)">↻ Refresh</button>
+    </div>
+    <div id="elist"><div class="empty">⏳<br><br>Loading…</div></div>
+  </div>
+
+  <!-- ADD -->
+  <div class="page" id="pg-add">
+    <div class="fcard">
+      <div class="fsec">
+        <label class="flabel">Invested By</label>
+        <div class="prow">
+          <button class="pbtn" id="pb-Kavi" onclick="setPayer('Kavi')">Kavi</button>
+          <button class="pbtn" id="pb-Varun" onclick="setPayer('Varun')">Varun</button>
+          <button class="pbtn" id="pb-Dilish" onclick="setPayer('Dilish')">Dilish</button>
+        </div>
+      </div>
+      <div class="fsec"><label class="flabel">Date</label><input type="date" id="fdate"></div>
+      <div class="fsec">
+        <label class="flabel">Category</label>
+        <select id="fcat" style="color:#f0f0f5;background:#0C0C0F">
+          <option>🏗️ Capital</option><option>🛒 Equipment</option><option>🏠 Rent / Space</option>
+          <option>📢 Marketing</option><option>🧑‍💼 Salaries</option><option>🔧 Operations</option>
+          <option>📦 Inventory</option><option>⚖️ Legal / Compliance</option><option>💡 Utilities</option><option>📦 Other</option>
+        </select>
+      </div>
+      <div class="fsec"><label class="flabel">Description</label><input type="text" id="fdesc" placeholder="What was this investment for?"></div>
+      <div class="fsec"><label class="flabel">Amount (₹)</label><input type="number" id="famt" inputmode="decimal" placeholder="0" min="0" step="1" class="amt-input"></div>
+      <div class="fsec"><label class="flabel">Notes (optional)</label><input type="text" id="fnote" placeholder="Receipt, vendor, reference…"></div>
+      <button class="savebtn" id="savebtn" onclick="addEntry()">Record Investment →</button>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="page" id="pg-summary">
+    <div class="scard">
+      <div class="stitle">Total Capital Invested</div>
+      <div class="big-stat">
+        <div class="big-num" id="s-total">₹0</div>
+        <div class="big-lbl"><span id="s-count">0</span> investments recorded</div>
+      </div>
+    </div>
+    <div class="scard"><div class="stitle">Per Investor</div><div id="inv-bd"></div></div>
+    <div class="scard" id="cat-card" style="display:none"><div class="stitle">By Category</div><div id="cat-bd"></div></div>
+  </div>
+</div>
+
+<script>
+const ALLOWED={'rajkavigaran@gmail.com':1,'varun.precisiongroup@gmail.com':1,'dilish007@gmail.com':1};
+const EMAIL_NAME={'rajkavigaran@gmail.com':'Kavi','varun.precisiongroup@gmail.com':'Varun','dilish007@gmail.com':'Dilish'};
+const URL_KEY='frappo-url-v1',LOCAL_KEY='frappo-data-v1';
+const P=['Kavi','Varun','Dilish'];
+const C={
+  Kavi:{s:'#FF6B6B',m:'rgba(255,107,107,.15)',g:'linear-gradient(135deg,#FF6B6B,#FF9A3C)'},
+  Varun:{s:'#4ECDC4',m:'rgba(78,205,196,.15)',g:'linear-gradient(135deg,#4ECDC4,#44E5DB)'},
+  Dilish:{s:'#FFE66D',m:'rgba(255,230,109,.15)',g:'linear-gradient(135deg,#FFE66D,#FFC300)'},
+};
+const CATS=['🏗️ Capital','🛒 Equipment','🏠 Rent / Space','📢 Marketing','🧑‍💼 Salaries','🔧 Operations','📦 Inventory','⚖️ Legal / Compliance','💡 Utilities','📦 Other'];
+let entries=[],payer='Kavi',delId=null,user=null,flashT;
+
+// AUTH
+function handleCredential(r){
+  const pl=JSON.parse(atob(r.credential.split('.')[1]));
+  const em=pl.email.toLowerCase();
+  if(!ALLOWED[em]){document.getElementById('denied').classList.add('show');return;}
+  user={email:em,name:EMAIL_NAME[em],pic:pl.picture};
+  document.getElementById('login').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('uname').textContent=user.name;
+  document.getElementById('uavatar').src=user.pic;
+  setPayer(user.name);
+  init();
+}
+function signOut(){
+  google.accounts.id.disableAutoSelect();
+  user=null;entries=[];
+  document.getElementById('app').style.display='none';
+  document.getElementById('login').style.display='flex';
+  document.getElementById('denied').classList.remove('show');
+}
+
+// SHEETS
+function getUrl(){return localStorage.getItem(URL_KEY)||'';}
+function saveUrl(){
+  const u=document.getElementById('cfg-url').value.trim();
+  if(!u||!u.includes('script.google.com')){flash('Paste a valid Google Script URL','err');return;}
+  localStorage.setItem(URL_KEY,u);
+  document.getElementById('setup-card').classList.remove('show');
+  flash('Connected! Loading data…','info');
+  fetchData(true);
+}
+function setSS(s,l){
+  document.getElementById('sdot').className='sdot'+(s==='syncing'?' syncing':s==='err'?' err':'');
+  document.getElementById('slabel').textContent=l;
+}
+async function fetchData(msg){
+  const u=getUrl();
+  if(!u){setSS('err','Not connected — see setup above');document.getElementById('setup-card').classList.add('show');loadL();renderLog();updateT();return;}
+  setSS('syncing','Syncing with Google Sheets…');
+  try{
+    const r=await fetch(u+'?action=get',{cache:'no-store'});
+    const j=await r.json();
+    if(j.data){entries=j.data;saveL();const t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});setSS('ok','Live · synced '+t);if(msg)flash('Synced ✓','ok');}
+    else throw 0;
+  }catch(e){loadL();setSS('err','Offline — showing local data');if(msg)flash('Offline — local data shown','err');}
+  renderLog();updateT();
+  if(document.getElementById('pg-summary').classList.contains('on'))renderSum();
+}
+async function push(entry){
+  const u=getUrl();if(!u)return false;
+  try{await fetch(u,{method:'POST',body:JSON.stringify({action:'add',entry})});return true;}catch(e){return false;}
+}
+async function del(id){
+  const u=getUrl();if(!u)return false;
+  try{await fetch(u,{method:'POST',body:JSON.stringify({action:'delete',id})});return true;}catch(e){return false;}
+}
+function saveL(){try{localStorage.setItem(LOCAL_KEY,JSON.stringify(entries));}catch(e){}}
+function loadL(){try{const r=localStorage.getItem(LOCAL_KEY);if(r)entries=JSON.parse(r);}catch(e){}}
+
+// HELPERS
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function flash(msg,t){
+  const el=document.getElementById('fl');el.textContent=msg;el.className='flash '+t;
+  clearTimeout(flashT);requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
+  flashT=setTimeout(()=>el.classList.remove('show'),2800);
+}
+function go(pg){
+  ['log','add','summary'].forEach(p=>{document.getElementById('pg-'+p).className='page'+(p===pg?' on':'');});
+  document.querySelectorAll('.tab').forEach((b,i)=>{b.className='tab'+(['log','add','summary'][i]===pg?' on':'');});
+  if(pg==='summary')renderSum();if(pg==='log')renderLog();
+}
+function setPayer(n){
+  payer=n;
+  P.forEach(p=>{
+    const b=document.getElementById('pb-'+p);if(!b)return;
+    b.style.borderColor=p===n?C[p].s:'var(--border)';
+    b.style.background=p===n?C[p].m:'var(--bg)';
+    b.style.color=p===n?C[p].s:'var(--muted)';
+  });
+}
+
+// ADD
+async function addEntry(){
+  const date=document.getElementById('fdate').value,cat=document.getElementById('fcat').value;
+  const desc=document.getElementById('fdesc').value.trim(),amt=parseFloat(document.getElementById('famt').value);
+  const note=document.getElementById('fnote').value.trim();
+  if(!desc||!date||isNaN(amt)||amt<=0){flash('Fill all required fields','err');return;}
+  const btn=document.getElementById('savebtn');btn.disabled=true;btn.textContent='Saving…';
+  const entry={id:Date.now(),date,by:payer,category:cat,description:desc,amount:amt,note,addedBy:user?.email||''};
+  entries.unshift(entry);saveL();updateT();renderLog();
+  const ok=await push(entry);
+  btn.disabled=false;btn.textContent='Record Investment →';
+  document.getElementById('fdesc').value='';document.getElementById('famt').value='';document.getElementById('fnote').value='';
+  flash(ok?'✓ Saved to Google Sheets':'⚠️ Saved locally — will sync',ok?'ok':'err');
+  go('log');
+}
+
+// DELETE
+function cDel(id){delId=id;renderLog();}
+function nDel(){delId=null;renderLog();}
+async function doDel(id){
+  entries=entries.filter(e=>e.id!==id);saveL();delId=null;updateT();renderLog();
+  await del(id);flash('✓ Deleted','ok');
+}
+
+// RENDER
+function renderLog(){
+  const el=document.getElementById('elist');
+  if(!entries.length){el.innerHTML='<div class="empty">📈<br><br>No investments yet.<br>Tap ➕ Add to start.</div>';return;}
+  el.innerHTML=entries.map(e=>{
+    const c=C[e.by]||C.Kavi;
+    const right=delId===e.id
+      ?`<div class="dconf"><button class="dyes" onclick="doDel(${e.id})">Delete</button><button class="dno" onclick="nDel()">No</button></div>`
+      :`<button class="dbtn" onclick="cDel(${e.id})">×</button>`;
+    return`<div class="ecard"><div class="erow">
+      <div class="ebar" style="background:${c.g}"></div>
+      <div class="ebody">
+        <div class="edesc">${e.description}</div>
+        <div class="emeta">
+          <span class="etag" style="background:${c.m};color:${c.s}">${e.by}</span>
+          <span>${e.category}</span><span>·</span><span>${e.date}</span>
+          ${e.note?`<span>· ${e.note}</span>`:''}
+        </div>
+      </div>
+      <span class="eamt">₹${Number(e.amount).toLocaleString('en-IN')}</span>
+      ${right}
+    </div></div>`;
+  }).join('');
+}
+
+// TOTALS
+function tots(){const t={Kavi:0,Varun:0,Dilish:0};entries.forEach(e=>{if(t[e.by]!==undefined)t[e.by]+=Number(e.amount);});return t;}
+function updateT(){
+  const t=tots(),g=t.Kavi+t.Varun+t.Dilish;
+  document.getElementById('gtotal').textContent='₹'+g.toLocaleString('en-IN');
+  const ids={Kavi:['kv','kp'],Varun:['vv','vp'],Dilish:['dv','dp']};
+  P.forEach(p=>{
+    document.getElementById(ids[p][0]).textContent='₹'+t[p].toLocaleString('en-IN');
+    document.getElementById(ids[p][1]).textContent=g>0?(t[p]/g*100).toFixed(1)+'%':'0%';
+  });
+}
+
+// SUMMARY
+function renderSum(){
+  const t=tots(),g=t.Kavi+t.Varun+t.Dilish;
+  document.getElementById('s-total').textContent='₹'+g.toLocaleString('en-IN');
+  document.getElementById('s-count').textContent=entries.length;
+  document.getElementById('inv-bd').innerHTML=P.map(p=>`
+    <div class="brow">
+      <div class="bleft">
+        <div class="av" style="background:${C[p].g}">${p[0]}</div>
+        <div><div class="bname">${p}</div><div class="bsub">${g>0?(t[p]/g*100).toFixed(1):0}% · ${entries.filter(e=>e.by===p).length} entries</div></div>
+      </div>
+      <div class="bamt">₹${t[p].toLocaleString('en-IN')}</div>
+    </div>`).join('')+
+    (g>0?`<div class="own-section">
+      <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-weight:700">Ownership Split</div>
+      <div class="own-bar">${P.map(p=>`<div style="flex:${t[p]||.001};background:${C[p].g};min-width:${t[p]>0?'4px':'0'}"></div>`).join('')}</div>
+      <div class="own-legend">${P.map(p=>`<div style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:3px;background:${C[p].s};display:inline-block"></span>${p} ${g>0?(t[p]/g*100).toFixed(0):0}%</div>`).join('')}</div>
+    </div>`):'');
+  if(!g){document.getElementById('cat-card').style.display='none';return;}
+  document.getElementById('cat-card').style.display='block';
+  document.getElementById('cat-bd').innerHTML=CATS.map(cat=>{
+    const tot=entries.filter(e=>e.category===cat).reduce((a,e)=>a+Number(e.amount),0);
+    if(!tot)return'';
+    return`<div class="cbar-wrap">
+      <div class="cbar-top"><span>${cat}</span><span>₹${tot.toLocaleString('en-IN')}</span></div>
+      <div class="cbar-track"><div class="cbar-fill" style="width:${(tot/g*100).toFixed(1)}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// INIT
+function init(){
+  document.getElementById('fdate').value=today();
+  document.getElementById('cfg-url').value=getUrl();
+  if(getUrl()){fetchData(false);setInterval(()=>fetchData(false),30000);}
+  else{setSS('err','Not connected');document.getElementById('setup-card').classList.add('show');loadL();renderLog();updateT();}
+}
+</script>
+</body>
+</html>
